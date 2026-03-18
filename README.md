@@ -1,87 +1,92 @@
-# OptimizationAlgorithm
+# Otimizador de Sequenciamento Inteligente de AGULHA
 
-A basic optimization algorithm that finds the best production sequence for **Part D** — a product assembled from component parts **A**, **B** and **C** — based on the current stock volume of each component.
-
----
-
-## Problem
-
-Part D is assembled by combining one unit each of Parts A, B and C.  
-Each part has specific physical **measurements** (length × width × height).  
-Given a list of production orders and the current component inventory, the optimizer determines:
-
-1. Which Part D orders can be fulfilled (and how many units).
-2. The optimal **production sequence** that maximises total throughput.
-3. Which orders cannot be satisfied with the available stock.
+Algoritmo de otimizacao para producao do componente **AGULHA**, com base nos estoques disponiveis de **OP**, **BICO** e **SPACER**.
 
 ---
 
-## Project Structure
+## Cenario do Problema
+
+O produto final e montado com **4 componentes**:
+
+| Componente | Classes | Valor base (mm) | Passo (mm) |
+|------------|---------|-----------------|------------|
+| OP         | A..E    | 3.005           | 0.010      |
+| BICO       | A..E    | 30.005          | 0.010      |
+| SPACER     | A..E    | 40.005          | 0.010      |
+| AGULHA     | A..M    | 72.690          | 0.010      |
+
+**Restricao de qualidade:**
+
+```
+dim(OP) + dim(BICO) + dim(SPACER) + dim(AGULHA) = 73.015 +/- 0.325
+```
+
+---
+
+## Logica do Algoritmo
+
+**Input:**
+- Estoque atual de cada classe de OP, BICO e SPACER.
+
+**Output:**
+- Quantidade de AGULHA a produzir por classe para maximizar o aproveitamento dos estoques dos outros tres componentes.
+
+**Passos:**
+1. **Enumerar combinacoes validas** - Para cada trinca (OP_i, BICO_j, SPACER_k), calcula a soma dimensional e verifica qual classe de AGULHA satisfaz a restricao de qualidade.
+2. **Calcular potencial** - Para cada combinacao, o maximo de montagens possiveis e `min(estoque_OP, estoque_BICO, estoque_SPACER)`.
+3. **Alocar (greedy)** - Ordena as combinacoes pelo potencial (decrescente) e aloca os estoques de forma gulosa.
+4. **Agregar producao de AGULHA** - Soma as quantidades necessarias por classe de AGULHA.
+
+---
+
+## Estrutura do Projeto
 
 ```
 OptimizationAlgorithm/
-├── main.py               # Entry point – sample scenario
-├── requirements.txt
-├── src/
-│   ├── __init__.py
-│   ├── models.py         # Measurement, PartA/B/C, PartD, Stock
-│   └── optimizer.py      # ProductionOptimizer, ProductionOrder, OptimizationResult
-└── tests/
-    ├── test_models.py
-    └── test_optimizer.py
++-- main.py                # Ponto de entrada - cenario de exemplo
++-- requirements.txt
++-- src/
+|   +-- __init__.py
+|   +-- models.py          # ClasseDimensional, EstoqueComponentes, CombinacaoMontagem
+|   +-- optimizer.py       # OtimizadorAgulha, ResultadoOtimizacao
++-- tests/
+    +-- test_models.py
+    +-- test_optimizer.py
 ```
 
 ---
 
-## Key Concepts
-
-| Class | Description |
-|---|---|
-| `Measurement` | Physical dimensions of a part (length, width, height in mm). Supports tolerance-based compatibility checks. |
-| `PartA` / `PartB` / `PartC` | Component parts with a measurement and a stock quantity. |
-| `PartD` | Assembled product specifying the required measurements for each component. |
-| `Stock` | Inventory container holding lists of Part A, B and C (multiple measurement variants per component are supported). |
-| `ProductionOrder` | A request to produce N units of a specific Part D variant. |
-| `ProductionOptimizer` | Scores each order by achievable quantity given current stock, sorts orders to maximise throughput, simulates production and returns an `OptimizationResult`. |
-| `OptimizationResult` | Contains the optimised sequence, feasible orders, infeasible orders and total units produced. |
-
----
-
-## Quick Start
+## Execucao Rapida
 
 ```bash
-# Install dependencies
 pip install -r requirements.txt
-
-# Run the sample scenario
 python main.py
 ```
 
-### Example output
+### Saida esperada
 
 ```
-=== Initial Stock ===
-  Part A: 15 unit(s)
-  Part B: 11 unit(s)
-  Part C: 16 unit(s)
+=== Estoque de Componentes ===
+  OP    : A=396  B=384  C=389  D=427  E=404
+  BICO  : A=50   B=396  C=384  D=389  E=427
+  SPACER: A=374  B=390  C=417  D=397  E=422
 
-=== Optimization Result ===
-Total Part D units produced : 10
-Feasible orders (2):
-  - Part D – Small: 7 unit(s)
-  - Part D – Large: 3 unit(s)
-Infeasible orders (1) - insufficient stock:
-  - Part D – Large: 2 unit(s) requested
+Total de combinacoes validas (OP x BICO x SPACER -> AGULHA): 125
 
-=== Remaining Stock ===
-  Part A: 5 unit(s)
-  Part B: 1 unit(s)
-  Part C: 6 unit(s)
+=======================================================
+  RESULTADO DA OTIMIZACAO
+=======================================================
+  Total de montagens planejadas : XXXX
+
+  Producao de AGULHA necessaria:
+    Classe C  ->   XXX unidades
+    Classe D  ->   XXX unidades
+    ...
 ```
 
 ---
 
-## Running Tests
+## Testes
 
 ```bash
 python -m pytest tests/ -v
@@ -89,8 +94,12 @@ python -m pytest tests/ -v
 
 ---
 
-## Optimization Strategy
+## Conceitos-chave
 
-1. **Score** – For each production order, calculate the maximum feasible quantity: `min(compatible_stock_A, compatible_stock_B, compatible_stock_C)`.
-2. **Sort** – Rank orders by feasible quantity (descending) to favour the most productive orders first.
-3. **Simulate** – Consume stock greedily (smallest batches first to spread usage) and record fulfilled / unfulfilled quantities.
+| Classe | Descricao |
+|--------|-----------|
+| `ClasseDimensional` | Valor nominal de uma classe de um componente. |
+| `EstoqueComponentes` | Estoque de classes de OP, BICO e SPACER. |
+| `CombinacaoMontagem` | Trinca valida (OP, BICO, SPACER) com a classe de AGULHA correspondente. |
+| `OtimizadorAgulha` | Motor de otimizacao greedy. |
+| `ResultadoOtimizacao` | Plano de producao de AGULHA e estatisticas de aproveitamento. |

@@ -1,133 +1,97 @@
-"""Unit tests for data models (Part A/B/C/D, Measurement, Stock)."""
+"""Testes unitarios para os modelos de dominio."""
 
 import pytest
 
-from src.models import Measurement, Part, PartA, PartB, PartC, PartD, Stock
+from src.models import (
+    DIFERENCA_MONTAGEM,
+    ALVO_MONTAGEM,
+    CLASSES_AGULHA,
+    CLASSES_BICO,
+    CLASSES_OP,
+    CLASSES_SPACER,
+    TOLERANCIA_MONTAGEM,
+    ClasseDimensional,
+    EstoqueComponentes,
+    gerar_classes,
+)
 
 
-# ---------------------------------------------------------------------------
-# Measurement
-# ---------------------------------------------------------------------------
+class TestClasseDimensional:
+    def test_nome_e_valor(self):
+        c = ClasseDimensional(nome="A", valor=3.005)
+        assert c.nome == "A"
+        assert c.valor == pytest.approx(3.005)
 
-class TestMeasurement:
-    def test_repr(self):
-        m = Measurement(10, 20, 30)
-        assert "10" in repr(m)
-        assert "20" in repr(m)
-        assert "30" in repr(m)
-
-    def test_exact_compatibility(self):
-        m1 = Measurement(10, 20, 30)
-        m2 = Measurement(10, 20, 30)
-        assert m1.is_compatible_with(m2)
-
-    def test_incompatible_without_tolerance(self):
-        m1 = Measurement(10, 20, 30)
-        m2 = Measurement(10.5, 20, 30)
-        assert not m1.is_compatible_with(m2, tolerance=0.0)
-
-    def test_compatible_with_tolerance(self):
-        m1 = Measurement(10, 20, 30)
-        m2 = Measurement(10.4, 20, 30)
-        assert m1.is_compatible_with(m2, tolerance=0.5)
-
-    def test_incompatible_exceeds_tolerance(self):
-        m1 = Measurement(10, 20, 30)
-        m2 = Measurement(11, 20, 30)
-        assert not m1.is_compatible_with(m2, tolerance=0.5)
+    def test_frozen(self):
+        c = ClasseDimensional(nome="B", valor=3.015)
+        with pytest.raises(Exception):
+            c.nome = "X"  # type: ignore[misc]
 
 
-# ---------------------------------------------------------------------------
-# Part (base)
-# ---------------------------------------------------------------------------
+class TestGerarClasses:
+    def test_quantidade(self):
+        classes = gerar_classes(valor_inicial=10.0, passo=0.01, nomes=["A", "B", "C"])
+        assert len(classes) == 3
 
-class TestPart:
-    def _make_part(self, stock=5):
-        return PartA(measurement=Measurement(10, 10, 10), stock=stock)
+    def test_valores_incrementais(self):
+        classes = gerar_classes(valor_inicial=3.005, passo=0.010, nomes=["A", "B", "C", "D", "E"])
+        for i, c in enumerate(classes):
+            assert c.valor == pytest.approx(3.005 + i * 0.010, abs=1e-6)
 
-    def test_consume_reduces_stock(self):
-        part = self._make_part(stock=5)
-        part.consume(3)
-        assert part.stock == 2
-
-    def test_consume_all_stock(self):
-        part = self._make_part(stock=5)
-        part.consume(5)
-        assert part.stock == 0
-
-    def test_consume_raises_when_insufficient(self):
-        part = self._make_part(stock=2)
-        with pytest.raises(ValueError):
-            part.consume(3)
-
-    def test_replenish_increases_stock(self):
-        part = self._make_part(stock=3)
-        part.replenish(4)
-        assert part.stock == 7
-
-    def test_replenish_negative_raises(self):
-        part = self._make_part(stock=3)
-        with pytest.raises(ValueError):
-            part.replenish(-1)
+    def test_nomes_corretos(self):
+        classes = gerar_classes(valor_inicial=1.0, passo=0.1, nomes=["X", "Y", "Z"])
+        assert [c.nome for c in classes] == ["X", "Y", "Z"]
 
 
-# ---------------------------------------------------------------------------
-# PartA / PartB / PartC default names
-# ---------------------------------------------------------------------------
+class TestClassesPadrao:
+    def test_op_tem_5_classes(self):
+        assert len(CLASSES_OP) == 5
 
-class TestPartSubclasses:
-    def test_part_a_default_name(self):
-        p = PartA(measurement=Measurement(1, 1, 1))
-        assert p.name == "Part A"
+    def test_bico_tem_5_classes(self):
+        assert len(CLASSES_BICO) == 5
 
-    def test_part_b_default_name(self):
-        p = PartB(measurement=Measurement(1, 1, 1))
-        assert p.name == "Part B"
+    def test_spacer_tem_5_classes(self):
+        assert len(CLASSES_SPACER) == 5
 
-    def test_part_c_default_name(self):
-        p = PartC(measurement=Measurement(1, 1, 1))
-        assert p.name == "Part C"
+    def test_agulha_tem_13_classes(self):
+        assert len(CLASSES_AGULHA) == 13
+
+    def test_agulha_classes_A_ate_M(self):
+        nomes = [c.nome for c in CLASSES_AGULHA]
+        assert nomes == list("ABCDEFGHIJKLM")
 
 
-# ---------------------------------------------------------------------------
-# Stock
-# ---------------------------------------------------------------------------
+class TestEstoqueComponentes:
+    def _estoque(self):
+        return EstoqueComponentes(
+            op={"A": 100, "B": 200},
+            bico={"A": 50, "C": 150},
+            spacer={"D": 300},
+        )
 
-class TestStock:
-    def _make_stock(self):
-        s = Stock()
-        s.add_part_a(PartA(measurement=Measurement(10, 10, 10), stock=5))
-        s.add_part_a(PartA(measurement=Measurement(20, 20, 20), stock=3))
-        s.add_part_b(PartB(measurement=Measurement(10, 10, 10), stock=7))
-        s.add_part_c(PartC(measurement=Measurement(10, 10, 10), stock=2))
-        return s
+    def test_qtd_op_existente(self):
+        e = self._estoque()
+        assert e.qtd_op("A") == 100
 
-    def test_total_stock_a(self):
-        s = self._make_stock()
-        assert s.total_stock_a() == 8
+    def test_qtd_op_inexistente(self):
+        e = self._estoque()
+        assert e.qtd_op("Z") == 0
 
-    def test_total_stock_b(self):
-        s = self._make_stock()
-        assert s.total_stock_b() == 7
+    def test_total_op(self):
+        e = self._estoque()
+        assert e.total_op() == 300
 
-    def test_total_stock_c(self):
-        s = self._make_stock()
-        assert s.total_stock_c() == 2
+    def test_total_bico(self):
+        e = self._estoque()
+        assert e.total_bico() == 200
 
-    def test_summary_keys(self):
-        s = self._make_stock()
-        summary = s.summary()
-        assert set(summary.keys()) == {"Part A", "Part B", "Part C"}
+    def test_total_spacer(self):
+        e = self._estoque()
+        assert e.total_spacer() == 300
 
-    def test_summary_values(self):
-        s = self._make_stock()
-        summary = s.summary()
-        assert summary["Part A"] == 8
-        assert summary["Part B"] == 7
-        assert summary["Part C"] == 2
-
-    def test_empty_stock(self):
-        s = Stock()
-        assert s.total_stock_a() == 0
-        assert s.total_stock_b() == 0
-        assert s.total_stock_c() == 0
+    def test_resumo_contem_componentes(self):
+        e = self._estoque()
+        r = e.resumo()
+        assert "OP" in r
+        assert "BICO" in r
+        assert "SPACER" in r
