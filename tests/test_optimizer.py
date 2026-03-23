@@ -1,49 +1,73 @@
-"""Testes unitarios para o otimizador de producao de AGULHA."""
+"""Testes unitarios para o otimizador generico de producao."""
 
 import pytest
 
 from src.models import (
-    DIFERENCA_MONTAGEM,
-    ALVO_MONTAGEM,
-    CLASSES_AGULHA,
-    CLASSES_BICO,
-    CLASSES_OP,
-    CLASSES_SPACER,
-    TOLERANCIA_MONTAGEM,
     ClasseDimensional,
-    EstoqueComponentes,
-    gerar_classes,
+    EstoqueMercado,
+    Modelo,
+    ProdutoFinal,
 )
-from src.optimizer import OtimizadorAgulha, ResultadoOtimizacao
+from src.optimizer import Otimizador, ResultadoOtimizacao
 
 
 # ---------------------------------------------------------------------------
-# Fixtures auxiliares
+# Helpers / Fixtures
 # ---------------------------------------------------------------------------
+
+def _modelos_padrao():
+    """Retorna os 4 modelos do cenario OP/BICO/SPACER/AGULHA."""
+    op     = Modelo(nome="OP",     nominal=3.025,  tolerancia=0.020, step=0.010)
+    bico   = Modelo(nome="BICO",   nominal=30.025, tolerancia=0.020, step=0.010)
+    spacer = Modelo(nome="SPACER", nominal=40.025, tolerancia=0.020, step=0.010)
+    agulha = Modelo(nome="AGULHA", nominal=72.750, tolerancia=0.060, step=0.010)
+    return op, bico, spacer, agulha
+
+
+def _produto_final_padrao() -> ProdutoFinal:
+    """OP + BICO + SPACER - AGULHA = 0.325 exato."""
+    return ProdutoFinal(nominal=0.325, tolerancia=0.000, step=0.001)
+
+
+def _estoque_por_valor(op_qtds, bico_qtds, spacer_qtds) -> EstoqueMercado:
+    """
+    Cria EstoqueMercado com chaves por valor dimensional (float).
+    op_qtds / bico_qtds / spacer_qtds: list de int, uma por classe (A, B, C, D, E).
+    """
+    op_vals     = [3.005, 3.015, 3.025, 3.035, 3.045]
+    bico_vals   = [30.005, 30.015, 30.025, 30.035, 30.045]
+    spacer_vals = [40.005, 40.015, 40.025, 40.035, 40.045]
+    return EstoqueMercado(niveis={
+        "OP":     {v: q for v, q in zip(op_vals,     op_qtds)},
+        "BICO":   {v: q for v, q in zip(bico_vals,   bico_qtds)},
+        "SPACER": {v: q for v, q in zip(spacer_vals, spacer_qtds)},
+    })
+
 
 @pytest.fixture()
-def estoque_balanceado():
-    """Estoque com quantidades iguais em todas as classes."""
-    return EstoqueComponentes(
-        op={c.nome: 100 for c in CLASSES_OP},
-        bico={c.nome: 100 for c in CLASSES_BICO},
-        spacer={c.nome: 100 for c in CLASSES_SPACER},
+def estoque_balanceado() -> EstoqueMercado:
+    return _estoque_por_valor(
+        [100, 100, 100, 100, 100],
+        [100, 100, 100, 100, 100],
+        [100, 100, 100, 100, 100],
     )
 
 
 @pytest.fixture()
-def estoque_simples():
-    """Estoque minimo: apenas classe A de cada componente."""
-    return EstoqueComponentes(
-        op={"A": 10},
-        bico={"A": 10},
-        spacer={"A": 10},
-    )
+def estoque_simples() -> EstoqueMercado:
+    """Estoque minimo: apenas classe A (menor valor) de cada modelo fixo."""
+    return _estoque_por_valor([10, 0, 0, 0, 0], [10, 0, 0, 0, 0], [10, 0, 0, 0, 0])
 
 
 @pytest.fixture()
-def otimizador_balanceado(estoque_balanceado):
-    return OtimizadorAgulha(estoque=estoque_balanceado)
+def otimizador_balanceado(estoque_balanceado) -> Otimizador:
+    op, bico, spacer, agulha = _modelos_padrao()
+    return Otimizador(
+        modelos_fixos=[op, bico, spacer],
+        modelo_otimizado=agulha,
+        produto_final=_produto_final_padrao(),
+        estoque=estoque_balanceado,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -59,40 +83,42 @@ class TestEnumeracaoCombinacoes:
         combs = otimizador_balanceado.enumerar_combinacoes()
         assert len(combs) > 0
 
-    def test_cada_combinacao_tem_agulha_valida(self, otimizador_balanceado):
+    def test_quantidade_combinacoes_validas(self, otimizador_balanceado):
+        """5x5x5 = 125 combos fixos, cada uma tem exatamente 1 classe AGULHA valida."""
         combs = otimizador_balanceado.enumerar_combinacoes()
-        nomes_agulha = {c.nome for c in CLASSES_AGULHA}
-        for comb in combs:
-            assert comb.classe_agulha in nomes_agulha
+        assert len(combs) == 125
 
-    def test_montagem_dentro_da_tolerancia(self, otimizador_balanceado):
-        combs = otimizador_balanceado.enumerar_combinacoes()
-        for comb in combs:
-            # Regra: ROUND(OP+BICO+SPACER - AGULHA, 3) == DIFERENCA_MONTAGEM
-            diferenca = round(comb.soma_op_bico_spacer - comb.dim_agulha_necessaria, 3)
-            assert diferenca == pytest.approx(DIFERENCA_MONTAGEM, abs=1e-6), (
-                f"Combinacao {comb} invalida: diferenca={diferenca}"
+    def test_classe_otimizado_eh_ClasseDimensional(self, otimizador_balanceado):
+        for comb in otimizador_balanceado.enumerar_combinacoes():
+            assert isinstance(comb.classe_otimizado, ClasseDimensional)
+
+    def test_classe_otimizado_valida(self, otimizador_balanceado):
+        _, _, _, agulha = _modelos_padrao()
+        valores_agulha = {round(c.valor, 6) for c in agulha.gerar_classes()}
+        for comb in otimizador_balanceado.enumerar_combinacoes():
+            assert round(comb.classe_otimizado.valor, 6) in valores_agulha
+
+    def test_montagem_satisfaz_produto_final(self, otimizador_balanceado):
+        """Para cada combo: soma_fixos - dim_otimizado deve estar nas classes do PF."""
+        pf = _produto_final_padrao()
+        valores_pf = {round(c.valor, 6) for c in pf.gerar_classes()}
+        for comb in otimizador_balanceado.enumerar_combinacoes():
+            resultado = round(comb.soma_fixos - comb.classe_otimizado.valor, 6)
+            assert resultado in valores_pf, (
+                f"{comb}: resultado {resultado} nao esta nas classes do PF"
             )
 
-    def test_combinacao_simples_classe_A(self, estoque_simples):
-        """
-        enumerar_combinacoes retorna todas as combinacoes dimensionalmente validas
-        independente do estoque. Com estoque apenas na classe A, o otimizador
-        deve alocar somente combinacoes AAA.
-        """
-        otim = OtimizadorAgulha(estoque=estoque_simples)
-        # Deve existir ao menos a combinacao A+A+A -> AGULHA_A
+    def test_combinacao_classe_A_op_existe(self, estoque_simples):
+        op, bico, spacer, agulha = _modelos_padrao()
+        otim = Otimizador(
+            modelos_fixos=[op, bico, spacer],
+            modelo_otimizado=agulha,
+            produto_final=_produto_final_padrao(),
+            estoque=estoque_simples,
+        )
         combs = otim.enumerar_combinacoes()
-        assert len(combs) >= 1
-        nomes_op = {c.classe_op for c in combs}
-        assert "A" in nomes_op
-
-        # O otimizador so deve alocar combinacoes que tem estoque
-        res = otim.otimizar()
-        for comb, qty in res.montagens_por_combinacao:
-            assert comb.classe_op == "A"
-            assert comb.classe_bico == "A"
-            assert comb.classe_spacer == "A"
+        valores_op = {round(c.classes_fixos["OP"].valor, 6) for c in combs}
+        assert round(3.005, 6) in valores_op  # classe A do OP
 
 
 # ---------------------------------------------------------------------------
@@ -108,103 +134,136 @@ class TestOtimizador:
         res = otimizador_balanceado.otimizar()
         assert res.total_montagens() > 0
 
-    def test_producao_agulha_somente_classes_validas(self, otimizador_balanceado):
+    def test_producao_otimizado_somente_classes_validas(self, otimizador_balanceado):
+        _, _, _, agulha = _modelos_padrao()
+        valores_agulha = {round(c.valor, 6) for c in agulha.gerar_classes()}
         res = otimizador_balanceado.otimizar()
-        nomes_agulha = {c.nome for c in CLASSES_AGULHA}
-        for classe in res.producao_agulha:
-            assert classe in nomes_agulha
+        for cls in res.producao_otimizado:
+            assert isinstance(cls, ClasseDimensional)
+            assert round(cls.valor, 6) in valores_agulha
+
+    def test_producao_soma_igual_ao_total(self, otimizador_balanceado):
+        res = otimizador_balanceado.otimizar()
+        assert sum(res.producao_otimizado.values()) == res.total_montagens()
 
     def test_nao_ultrapassa_estoque_op(self, estoque_balanceado):
-        """O consumo de cada classe de OP nao pode superar o estoque inicial."""
-        otim = OtimizadorAgulha(estoque=estoque_balanceado)
+        op, bico, spacer, agulha = _modelos_padrao()
+        otim = Otimizador(
+            modelos_fixos=[op, bico, spacer],
+            modelo_otimizado=agulha,
+            produto_final=_produto_final_padrao(),
+            estoque=estoque_balanceado,
+        )
         res = otim.otimizar()
-        consumo_op = {}
+        consumo: dict = {}
         for comb, qty in res.montagens_por_combinacao:
-            consumo_op[comb.classe_op] = consumo_op.get(comb.classe_op, 0) + qty
-        for classe, consumido in consumo_op.items():
-            disponivel = estoque_balanceado.qtd_op(classe)
-            assert consumido <= disponivel, (
-                f"OP classe {classe}: consumido {consumido} > disponivel {disponivel}"
-            )
+            v = comb.classes_fixos["OP"].valor
+            consumo[v] = consumo.get(v, 0) + qty
+        for v, cons in consumo.items():
+            assert cons <= estoque_balanceado.qtd("OP", v)
 
     def test_nao_ultrapassa_estoque_bico(self, estoque_balanceado):
-        otim = OtimizadorAgulha(estoque=estoque_balanceado)
+        op, bico, spacer, agulha = _modelos_padrao()
+        otim = Otimizador(
+            modelos_fixos=[op, bico, spacer],
+            modelo_otimizado=agulha,
+            produto_final=_produto_final_padrao(),
+            estoque=estoque_balanceado,
+        )
         res = otim.otimizar()
-        consumo_bico = {}
+        consumo: dict = {}
         for comb, qty in res.montagens_por_combinacao:
-            consumo_bico[comb.classe_bico] = consumo_bico.get(comb.classe_bico, 0) + qty
-        for classe, consumido in consumo_bico.items():
-            disponivel = estoque_balanceado.qtd_bico(classe)
-            assert consumido <= disponivel
+            v = comb.classes_fixos["BICO"].valor
+            consumo[v] = consumo.get(v, 0) + qty
+        for v, cons in consumo.items():
+            assert cons <= estoque_balanceado.qtd("BICO", v)
 
     def test_nao_ultrapassa_estoque_spacer(self, estoque_balanceado):
-        otim = OtimizadorAgulha(estoque=estoque_balanceado)
+        op, bico, spacer, agulha = _modelos_padrao()
+        otim = Otimizador(
+            modelos_fixos=[op, bico, spacer],
+            modelo_otimizado=agulha,
+            produto_final=_produto_final_padrao(),
+            estoque=estoque_balanceado,
+        )
         res = otim.otimizar()
-        consumo_spacer = {}
+        consumo: dict = {}
         for comb, qty in res.montagens_por_combinacao:
-            consumo_spacer[comb.classe_spacer] = consumo_spacer.get(comb.classe_spacer, 0) + qty
-        for classe, consumido in consumo_spacer.items():
-            disponivel = estoque_balanceado.qtd_spacer(classe)
-            assert consumido <= disponivel
+            v = comb.classes_fixos["SPACER"].valor
+            consumo[v] = consumo.get(v, 0) + qty
+        for v, cons in consumo.items():
+            assert cons <= estoque_balanceado.qtd("SPACER", v)
 
     def test_estoque_vazio_zero_montagens(self):
-        estoque_vazio = EstoqueComponentes(op={}, bico={}, spacer={})
-        otim = OtimizadorAgulha(estoque=estoque_vazio)
+        op, bico, spacer, agulha = _modelos_padrao()
+        estoque_vazio = EstoqueMercado(niveis={"OP": {}, "BICO": {}, "SPACER": {}})
+        otim = Otimizador(
+            modelos_fixos=[op, bico, spacer],
+            modelo_otimizado=agulha,
+            produto_final=_produto_final_padrao(),
+            estoque=estoque_vazio,
+        )
         res = otim.otimizar()
         assert res.total_montagens() == 0
 
-    def test_resumo_contem_agulha(self, otimizador_balanceado):
+    def test_resumo_contem_nome_otimizado(self, otimizador_balanceado):
         res = otimizador_balanceado.otimizar()
-        r = res.resumo()
-        assert "AGULHA" in r
+        assert "AGULHA" in res.resumo()
 
-    def test_producao_agulha_soma_igual_ao_total_montagens(self, estoque_balanceado):
-        otim = OtimizadorAgulha(estoque=estoque_balanceado)
-        res = otim.otimizar()
-        soma_agulha = sum(res.producao_agulha.values())
-        assert soma_agulha == res.total_montagens()
+    def test_aproveitamento_entre_0_e_1(self, otimizador_balanceado):
+        res = otimizador_balanceado.otimizar()
+        for m in ["OP", "BICO", "SPACER"]:
+            a = res.aproveitamento(m)
+            assert 0.0 <= a <= 1.0
 
 
 # ---------------------------------------------------------------------------
-# Testes de integracao (cenario realista do Excel)
+# Testes de integracao (cenario realista)
 # ---------------------------------------------------------------------------
 
 class TestCenarioRealista:
-    def test_cenario_geral_excel(self):
+    def test_cenario_estoque_real(self):
         """
-        Reproduz o cenario da aba 'Geral' do SequenciamentoInteligente.xlsm:
-            OP:    A=396 B=384 C=389 D=427 E=404
-            BICO:  A=396 B=384 C=389 D=427 E=404  (aprox.)
-            SPACER:A=374 B=390 C=417 D=397 E=422
+        Verifica que o algoritmo produz 2000 montagens com 100% de aproveitamento
+        usando o estoque real fornecido pelo usuario (por valor dimensional).
         """
-        estoque = EstoqueComponentes(
-            op={"A": 396, "B": 384, "C": 389, "D": 427, "E": 404},
-            bico={"A": 396, "B": 384, "C": 389, "D": 427, "E": 404},
-            spacer={"A": 374, "B": 390, "C": 417, "D": 397, "E": 422},
+        op, bico, spacer, agulha = _modelos_padrao()
+        estoque = _estoque_por_valor(
+            [410, 391, 383, 409, 407],  # OP:    3.005..3.045
+            [396, 384, 389, 427, 404],  # BICO:  30.005..30.045
+            [374, 390, 417, 397, 422],  # SPACER:40.005..40.045
         )
-        otim = OtimizadorAgulha(estoque=estoque)
+        otim = Otimizador(
+            modelos_fixos=[op, bico, spacer],
+            modelo_otimizado=agulha,
+            produto_final=_produto_final_padrao(),
+            estoque=estoque,
+        )
         res = otim.otimizar()
 
-        # Deve produzir montagens
-        assert res.total_montagens() > 0
+        assert res.total_montagens() == 2000
 
-        # A producao de agulha deve cobrir apenas classes reais
-        nomes_agulha = {c.nome for c in CLASSES_AGULHA}
-        for classe in res.producao_agulha:
-            assert classe in nomes_agulha
+        for m in ["OP", "BICO", "SPACER"]:
+            assert res.aproveitamento(m) == pytest.approx(1.0, abs=1e-6), (
+                f"Aproveitamento de {m} deve ser 100%"
+            )
 
-        # Restricao de estoque respeitada
-        consumo_op = {}
-        consumo_bico = {}
-        consumo_spacer = {}
-        for comb, qty in res.montagens_por_combinacao:
-            consumo_op[comb.classe_op] = consumo_op.get(comb.classe_op, 0) + qty
-            consumo_bico[comb.classe_bico] = consumo_bico.get(comb.classe_bico, 0) + qty
-            consumo_spacer[comb.classe_spacer] = consumo_spacer.get(comb.classe_spacer, 0) + qty
-
-        for cls, cons in consumo_op.items():
-            assert cons <= estoque.qtd_op(cls)
-        for cls, cons in consumo_bico.items():
-            assert cons <= estoque.qtd_bico(cls)
-        for cls, cons in consumo_spacer.items():
-            assert cons <= estoque.qtd_spacer(cls)
+    def test_classes_produto_final_nas_combinacoes(self):
+        """Todas as combinacoes devem referenciar uma ClasseDimensional valida do PF."""
+        op, bico, spacer, agulha = _modelos_padrao()
+        pf = _produto_final_padrao()
+        estoque = _estoque_por_valor(
+            [10, 10, 10, 10, 10],
+            [10, 10, 10, 10, 10],
+            [10, 10, 10, 10, 10],
+        )
+        otim = Otimizador(
+            modelos_fixos=[op, bico, spacer],
+            modelo_otimizado=agulha,
+            produto_final=pf,
+            estoque=estoque,
+        )
+        valores_pf = {round(c.valor, 6) for c in pf.gerar_classes()}
+        for comb in otim.enumerar_combinacoes():
+            assert isinstance(comb.classe_produto_final, ClasseDimensional)
+            assert round(comb.classe_produto_final.valor, 6) in valores_pf

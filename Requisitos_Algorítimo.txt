@@ -1,0 +1,104 @@
+=============================== Modelos ===============================
+
+OP - BICO - SPACER - AGULHA
+
+*Qtd no mercado de cada classe*
+*Nominal*
+*Tolerância*
+*Step da Tolerância (op)*
+
+Classes são divididas em N dentro da Nominal +- Tolerância (A, B, C, D, etc...)
+
+=======================================================================
+
+
+
+=============================== Inputs ================================
+
+*Níveis de mercado iniciais de cada classe de cada Modelo*
+*Valor nominal do produto final*
+*Tolerância máx e mín do produto final* 
+*Valor nominal, tolerância e step para o Modelo a ser otimizado*
+
+=======================================================================
+
+
+
+============================== Algorítmo ==============================
+
+Foco do algorítmo deve ser encontrar melhor nível de produção do Modelo
+selecionado para a montagem do produto final, visando o valor nominal do
+produto final de maneira mais otimizada, utilizando dos valores de mercado.
+
+Depois de todas as classes definidas para cada Modelo, encontrar todas as
+combinações que se encaixam dentro da Nominal +- Tolerância do produto final.
+
+Se a nominal for 72.000 mm e a Tolerância for 0.005 mm, eu tenho um range de 
+valores permitidos de se trabalhar, com um step de 0.001 mm:
+{ 72.005, 72.004, 72.003, 72.002, 72.001, 72.000, 71.999, 71.998, 71.997, 71.996, 71.995}
+
+Criando assim, classes para o meu produto final.
+
+Qualquer combinação de classes de Modelos que resultem em uma classe de
+produto final, está valendo.
+
+Com isso, o intuito do algorítmo é otimizar a utilização do estoque de Modelos.
+
+=======================================================================
+
+
+
+
+
+
+
+////////////////////////////////////////// Teste 1 //////////////////////////////////////////
+
+=== Classes geradas por Modelo ===
+  OP      : A=3.005  B=3.015  C=3.025  D=3.035  E=3.045
+  BICO    : A=30.005  B=30.015  C=30.025  D=30.035  E=30.045
+  SPACER  : A=40.005  B=40.015  C=40.025  D=40.035  E=40.045
+  AGULHA  : A=72.690  B=72.700  C=72.710  D=72.720  E=72.730  F=72.740  G=72.750  H=72.760  I=72.770  J=72.780  K=72.790  L=72.800  M=72.810
+
+=== Estoque de Mercado ===
+  BICO      : 30.0050=396  30.0150=384  30.0250=389  30.0350=427  30.0450=404
+  OP        : 3.0050=410  3.0150=391  3.0250=383  3.0350=409  3.0450=407
+  SPACER    : 40.0050=374  40.0150=390  40.0250=417  40.0350=397  40.0450=422
+
+Combinacoes validas encontradas: 125
+
+============================================================
+RESULTADO DA OTIMIZACAO
+============================================================
+Total de montagens    : 2000
+
+Producao necessaria de AGULHA por classe:
+  Classe D (72.7200 mm): 375 pecas
+  Classe E (72.7300 mm): 390 pecas
+  Classe F (72.7400 mm): 410 pecas
+  Classe G (72.7500 mm): 1 pecas
+  Classe H (72.7600 mm): 403 pecas
+  Classe I (72.7700 mm): 7 pecas
+  Classe K (72.7900 mm): 10 pecas
+  Classe L (72.8000 mm): 392 pecas
+  Classe M (72.8100 mm): 12 pecas
+
+Aproveitamento do estoque dos Modelos fixos:
+  OP        : 100.0%
+  BICO      : 100.0%
+  SPACER    : 100.0%
+
+Montagens por combinacao (top 20):
+  Comb(OP=A(3.0050) BICO=D(30.0350) SPACER=C(40.0250) | otimizado=F(72.7400) -> PF=A) x410
+  Comb(OP=E(3.0450) BICO=A(30.0050) SPACER=D(40.0350) | otimizado=H(72.7600) -> PF=A) x395
+  Comb(OP=D(3.0350) BICO=E(30.0450) SPACER=E(40.0450) | otimizado=L(72.8000) -> PF=A) x392
+  Comb(OP=B(3.0150) BICO=C(30.0250) SPACER=B(40.0150) | otimizado=E(72.7300) -> PF=A) x389
+  Comb(OP=C(3.0250) BICO=B(30.0150) SPACER=A(40.0050) | otimizado=D(72.7200) -> PF=A) x374
+  Comb(OP=E(3.0450) BICO=E(30.0450) SPACER=E(40.0450) | otimizado=M(72.8100) -> PF=A) x12
+  Comb(OP=D(3.0350) BICO=D(30.0350) SPACER=E(40.0450) | otimizado=K(72.7900) -> PF=A) x10
+  Comb(OP=C(3.0250) BICO=B(30.0150) SPACER=E(40.0450) | otimizado=H(72.7600) -> PF=A) x8
+  Comb(OP=D(3.0350) BICO=D(30.0350) SPACER=C(40.0250) | otimizado=I(72.7700) -> PF=A) x7
+  Comb(OP=B(3.0150) BICO=A(30.0050) SPACER=D(40.0350) | otimizado=E(72.7300) -> PF=A) x1
+  Comb(OP=B(3.0150) BICO=B(30.0150) SPACER=B(40.0150) | otimizado=D(72.7200) -> PF=A) x1
+  Comb(OP=C(3.0250) BICO=B(30.0150) SPACER=D(40.0350) | otimizado=G(72.7500) -> PF=A) x1
+============================================================
