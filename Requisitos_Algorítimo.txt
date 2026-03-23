@@ -54,6 +54,26 @@ Com isso, o intuito do algorítmo é otimizar a utilização do estoque de Model
 
 ////////////////////////////////////////// Teste 1 //////////////////////////////////////////
 
+=== Parâmetros utilizados ===
+Modelos, valor nominal, tolerância e step:
+ - OP,      3.025,     0.020,  0.010
+ - BICO,    30.025,    0.020,  0.010
+ - SPACER,  40.025,    0.020,  0.010
+ - AGULHA,  72.750,    0.060,  0.010
+
+Estoques de mercado:
+Modelo, Valor, Qtd
+OP,	    3.005 / 3.015 / 3.025 / 3.035 / 3.045,	        410 / 391 / 383 / 409 / 407
+BICO,	30.005 / 30.015 / 30.025 / 30.035 / 30.045,	    396 / 384 / 389 / 427 / 404
+SPACER,	40.005 / 40.015 / 40.025 / 40.035 / 40.045,	    374 / 390 / 417 / 397 / 422
+
+Produto final:
+Nominal, valor alvo da operação OP + BICO + SPACER - AGULHA: 0.325
+Tolerância: 0.000
+Step: 0.001
+
+
+
 === Classes geradas por Modelo ===
   OP      : A=3.005  B=3.015  C=3.025  D=3.035  E=3.045
   BICO    : A=30.005  B=30.015  C=30.025  D=30.035  E=30.045

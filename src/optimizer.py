@@ -1,29 +1,4 @@
-﻿"""
-Otimizador generico de sequenciamento de montagem.
-
-Objetivo
---------
-Dado um conjunto de Modelos, um Produto Final e o Modelo a ser otimizado,
-o algoritmo:
-  1. Cruza as classes de cada Modelo com o estoque informado por valor
-     dimensional, descobrindo quais classes possuem estoque disponivel.
-  2. Enumera todas as combinacoes validas dos Modelos fixos cujas somas
-     dimensionais, combinadas a alguma classe do Modelo otimizado, caem
-     dentro das classes do Produto Final.
-  3. Para cada combinacao valida, calcula o potencial de producao com base
-     no estoque disponivel dos Modelos fixos.
-  4. Aloca producao de forma gananciosa (greedy) — priorizando as combinacoes
-     com maior potencial — consumindo o estoque e calculando a producao
-     necessaria do Modelo otimizado por classe.
-
-Estoque
--------
-O estoque e informado por VALOR DIMENSIONAL (float), nao por rotulo de classe.
-O Otimizador faz o vinculo automaticamente: para cada classe gerada pelo Modelo
-(ex.: OP classe C = 25.02), busca no estoque a quantidade em 25.02.
-"""
-
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import itertools
 from dataclasses import dataclass, field
@@ -53,6 +28,7 @@ class ResultadoOtimizacao:
                                   ClasseDimensional (valor dimensional -> qtd).
     montagens_por_combinacao    : Lista de (combinacao, quantidade produzida).
     estoque_inicial             : Snapshot do estoque antes da otimizacao.
+    estoque_final               : Saldo remanescente apos todas as montagens.
     modelos_fixos               : Nomes dos Modelos fixos.
     nome_otimizado              : Nome do Modelo que foi otimizado.
     """
@@ -60,6 +36,7 @@ class ResultadoOtimizacao:
     producao_otimizado: Dict[ClasseDimensional, int]
     montagens_por_combinacao: List[Tuple[CombinacaoMontagem, int]]
     estoque_inicial: EstoqueMercado
+    estoque_final: Dict[str, Dict[float, int]]
     modelos_fixos: List[str]
     nome_otimizado: str
 
@@ -93,11 +70,14 @@ class ResultadoOtimizacao:
             pct = self.aproveitamento(m) * 100
             linhas.append(f"  {m:10s}: {pct:.1f}%")
 
-        linhas.append("\nMontagens por combinacao (top 20):")
-        ordenadas = sorted(self.montagens_por_combinacao, key=lambda x: -x[1])
-        for combo, qtd in ordenadas[:20]:
-            if qtd > 0:
-                linhas.append(f"  {combo} x{qtd}")
+        linhas.append("\nEstoque final (saldo remanescente):")
+        for modelo, banco in self.estoque_final.items():
+            linhas.append(f"\n  {modelo}:")
+            total_restante = sum(q for q in banco.values() if q > 0)
+            for val, qtd in sorted(banco.items()):
+                if qtd > 0:
+                    linhas.append(f"    {val:.4f} mm : {qtd} pecas")
+            linhas.append(f"    Total restante: {total_restante} pecas")
 
         linhas.append("=" * 60)
         return "\n".join(linhas)
@@ -147,6 +127,11 @@ class Otimizador:
             round(c.valor, 6): c for c in self._classes_pf
         }
 
+        # Mapa de lookup do modelo otimizado: valor -> ClasseDimensional
+        self._mapa_otimizado: Dict[float, ClasseDimensional] = {
+            round(c.valor, 6): c for c in self._classes_otimizado
+        }
+
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
@@ -164,41 +149,72 @@ class Otimizador:
         Retorna todas as combinacoes validas entre classes dos Modelos fixos
         e classes do Modelo otimizado, dentro do range do Produto Final.
 
-        Para cada combinacao dos Modelos fixos, testa:
-            soma_fixos - dim_otimizado = valor_pf   (modelo otimizado eh subtraido)
-            soma_fixos + dim_otimizado = valor_pf   (modelo otimizado eh somado)
+        Estrategia O(N^k) puro com lookup O(1):
+        Para cada combo dos fixos, calcula soma_int (inteiro escalado).
+        Para cada classe do PF, o valor necessario do otimizado e:
+            dim_ot = soma - pf   (relacao 1: soma - ot = pf)
+            dim_ot = pf - soma   (relacao 2: soma + ot = pf)
+        Ambos sao testados via dict lookup — sem nenhum loop sobre otimizado.
+        Como queremos no maximo UMA combinacao por combo fixo, paramos no
+        primeiro PF que casar (preferindo relacao 1).
         """
         combinacoes: List[CombinacaoMontagem] = []
 
         nomes_fixos = [m.nome for m in self.modelos_fixos]
-        lista_classes_fixos = [self._classes_fixos[n] for n in nomes_fixos]
+        listas: List[List[ClasseDimensional]] = [
+            self._classes_fixos[n] for n in nomes_fixos
+        ]
+        n = len(listas)
 
-        for combo in itertools.product(*lista_classes_fixos):
-            soma = round(sum(c.valor for c in combo), 6)
-            classes_dict = {nome: c for nome, c in zip(nomes_fixos, combo)}
+        # Trabalha em inteiros (escala 1e6) para evitar erros de float
+        ESCALA = 1_000_000
+        ot_int: Dict[int, ClasseDimensional] = {
+            round(c.valor * ESCALA): c for c in self._classes_otimizado
+        }
+        # Lista de (pf_int, ClasseDimensional) para iterar no loop
+        pf_list = [(round(c.valor * ESCALA), c) for c in self._classes_pf]
 
-            for classe_ot in self._classes_otimizado:
-                # Relacao 1: soma_fixos - dim_otimizado = valor_pf
-                chave1 = round(soma - classe_ot.valor, 6)
-                if chave1 in self._mapa_pf:
+        # Odometro manual sobre indices
+        indices = [0] * n
+        tamanhos = [len(l) for l in listas]
+
+        while True:
+            soma_int = sum(
+                round(listas[i][indices[i]].valor * ESCALA)
+                for i in range(n)
+            )
+
+            for pf_int, cpf in pf_list:
+                # Relacao 1: ot = soma - pf
+                cand = soma_int - pf_int
+                cls_ot = ot_int.get(cand)
+                if cls_ot is None:
+                    # Relacao 2: ot = pf - soma
+                    cls_ot = ot_int.get(pf_int - soma_int)
+
+                if cls_ot is not None:
+                    classes_dict = {
+                        nomes_fixos[i]: listas[i][indices[i]]
+                        for i in range(n)
+                    }
                     combinacoes.append(CombinacaoMontagem(
                         classes_fixos=classes_dict,
-                        classe_otimizado=classe_ot,
-                        classe_produto_final=self._mapa_pf[chave1],
-                        soma_fixos=soma,
+                        classe_otimizado=cls_ot,
+                        classe_produto_final=cpf,
+                        soma_fixos=soma_int / ESCALA,
                     ))
-                    break
+                    break  # uma combinacao por combo fixo
 
-                # Relacao 2: soma_fixos + dim_otimizado = valor_pf
-                chave2 = round(soma + classe_ot.valor, 6)
-                if chave2 in self._mapa_pf:
-                    combinacoes.append(CombinacaoMontagem(
-                        classes_fixos=classes_dict,
-                        classe_otimizado=classe_ot,
-                        classe_produto_final=self._mapa_pf[chave2],
-                        soma_fixos=soma,
-                    ))
+            # Avanca odometro
+            pos = n - 1
+            while pos >= 0:
+                indices[pos] += 1
+                if indices[pos] < tamanhos[pos]:
                     break
+                indices[pos] = 0
+                pos -= 1
+            if pos < 0:
+                break
 
         return combinacoes
 
@@ -213,11 +229,17 @@ class Otimizador:
         Estrategia
         ----------
         1. Enumera combinacoes validas.
-        2. Calcula potencial de cada combo:
-               min(estoque[modelo][valor_classe]) para cada modelo fixo.
-        3. Ordena por potencial decrescente.
-        4. Aloca greedily, consumindo o saldo do estoque.
-        5. Acumula producao necessaria do Modelo otimizado por classe.
+        2. Ordena pelos combos mais PERIFERICOS primeiro:
+               criterio primario  : desvio da soma dos fixos em relacao
+                                    a soma dos nominais (maior desvio = mais
+                                    dificil de combinar = prioridade maior).
+               criterio secundario: menor potencial de estoque disponivel
+                                    (classes raras antes das abundantes).
+           Isso garante que as classes nos extremos da tolerancia sejam
+           consumidas enquanto ainda ha parceiros, deixando as nominais
+           (faceis de combinar) para fechar o saldo restante.
+        3. Aloca greedily, consumindo o saldo do estoque.
+        4. Acumula producao necessaria do Modelo otimizado por classe.
         """
         estoque_inicial = EstoqueMercado(
             niveis={m: dict(banco) for m, banco in self.estoque.niveis.items()}
@@ -225,10 +247,15 @@ class Otimizador:
 
         combinacoes = self.enumerar_combinacoes()
         if not combinacoes:
+            estoque_final_vazio = {
+                m.nome: {round(v, 6): q for v, q in self.estoque.niveis.get(m.nome, {}).items()}
+                for m in self.modelos_fixos
+            }
             return ResultadoOtimizacao(
                 producao_otimizado={},
                 montagens_por_combinacao=[],
                 estoque_inicial=estoque_inicial,
+                estoque_final=estoque_final_vazio,
                 modelos_fixos=[m.nome for m in self.modelos_fixos],
                 nome_otimizado=self.modelo_otimizado.nome,
             )
@@ -240,13 +267,26 @@ class Otimizador:
             for m in nomes_fixos
         }
 
+        # Soma dos nominais dos modelos fixos — referencia do centro
+        soma_nominais = sum(m.nominal for m in self.modelos_fixos)
+
+        def desvio_do_centro(combo: CombinacaoMontagem) -> float:
+            """Distancia da soma dos fixos em relacao ao centro nominal.
+            Quanto maior, mais periferica e a combinacao."""
+            return abs(combo.soma_fixos - soma_nominais)
+
         def potencial(combo: CombinacaoMontagem) -> int:
             return min(
                 saldo[m].get(round(cls.valor, 6), 0)
                 for m, cls in combo.classes_fixos.items()
             )
 
-        combinacoes_ordenadas = sorted(combinacoes, key=potencial, reverse=True)
+        # Prioridade: 1) maior desvio do centro (perifericas primeiro)
+        #             2) menor potencial (classes mais raras primeiro)
+        combinacoes_ordenadas = sorted(
+            combinacoes,
+            key=lambda c: (-desvio_do_centro(c), potencial(c)),
+        )
 
         montagens: List[Tuple[CombinacaoMontagem, int]] = []
         producao_ot: Dict[ClasseDimensional, int] = {}
@@ -271,6 +311,7 @@ class Otimizador:
             producao_otimizado=producao_ot,
             montagens_por_combinacao=montagens,
             estoque_inicial=estoque_inicial,
+            estoque_final=saldo,
             modelos_fixos=nomes_fixos,
             nome_otimizado=self.modelo_otimizado.nome,
         )

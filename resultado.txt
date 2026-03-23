@@ -1,0 +1,380 @@
+============================================================
+CLASSES GERADAS POR MODELO
+============================================================
+
+  OP  (41 classes | nominal=3.025  tol=±0.02  step=0.001)
+    A    =  3.0050 mm
+    B    =  3.0060 mm
+    C    =  3.0070 mm
+    D    =  3.0080 mm
+    E    =  3.0090 mm
+    F    =  3.0100 mm
+    G    =  3.0110 mm
+    H    =  3.0120 mm
+    I    =  3.0130 mm
+    J    =  3.0140 mm
+    K    =  3.0150 mm
+    L    =  3.0160 mm
+    M    =  3.0170 mm
+    N    =  3.0180 mm
+    O    =  3.0190 mm
+    P    =  3.0200 mm
+    Q    =  3.0210 mm
+    R    =  3.0220 mm
+    S    =  3.0230 mm
+    T    =  3.0240 mm
+    U    =  3.0250 mm
+    V    =  3.0260 mm
+    W    =  3.0270 mm
+    X    =  3.0280 mm
+    Y    =  3.0290 mm
+    Z    =  3.0300 mm
+    AA   =  3.0310 mm
+    AB   =  3.0320 mm
+    AC   =  3.0330 mm
+    AD   =  3.0340 mm
+    AE   =  3.0350 mm
+    AF   =  3.0360 mm
+    AG   =  3.0370 mm
+    AH   =  3.0380 mm
+    AI   =  3.0390 mm
+    AJ   =  3.0400 mm
+    AK   =  3.0410 mm
+    AL   =  3.0420 mm
+    AM   =  3.0430 mm
+    AN   =  3.0440 mm
+    AO   =  3.0450 mm
+
+  BICO  (41 classes | nominal=30.025  tol=±0.02  step=0.001)
+    A    =  30.0050 mm
+    B    =  30.0060 mm
+    C    =  30.0070 mm
+    D    =  30.0080 mm
+    E    =  30.0090 mm
+    F    =  30.0100 mm
+    G    =  30.0110 mm
+    H    =  30.0120 mm
+    I    =  30.0130 mm
+    J    =  30.0140 mm
+    K    =  30.0150 mm
+    L    =  30.0160 mm
+    M    =  30.0170 mm
+    N    =  30.0180 mm
+    O    =  30.0190 mm
+    P    =  30.0200 mm
+    Q    =  30.0210 mm
+    R    =  30.0220 mm
+    S    =  30.0230 mm
+    T    =  30.0240 mm
+    U    =  30.0250 mm
+    V    =  30.0260 mm
+    W    =  30.0270 mm
+    X    =  30.0280 mm
+    Y    =  30.0290 mm
+    Z    =  30.0300 mm
+    AA   =  30.0310 mm
+    AB   =  30.0320 mm
+    AC   =  30.0330 mm
+    AD   =  30.0340 mm
+    AE   =  30.0350 mm
+    AF   =  30.0360 mm
+    AG   =  30.0370 mm
+    AH   =  30.0380 mm
+    AI   =  30.0390 mm
+    AJ   =  30.0400 mm
+    AK   =  30.0410 mm
+    AL   =  30.0420 mm
+    AM   =  30.0430 mm
+    AN   =  30.0440 mm
+    AO   =  30.0450 mm
+
+  SPACER  (41 classes | nominal=40.025  tol=±0.02  step=0.001)
+    A    =  40.0050 mm
+    B    =  40.0060 mm
+    C    =  40.0070 mm
+    D    =  40.0080 mm
+    E    =  40.0090 mm
+    F    =  40.0100 mm
+    G    =  40.0110 mm
+    H    =  40.0120 mm
+    I    =  40.0130 mm
+    J    =  40.0140 mm
+    K    =  40.0150 mm
+    L    =  40.0160 mm
+    M    =  40.0170 mm
+    N    =  40.0180 mm
+    O    =  40.0190 mm
+    P    =  40.0200 mm
+    Q    =  40.0210 mm
+    R    =  40.0220 mm
+    S    =  40.0230 mm
+    T    =  40.0240 mm
+    U    =  40.0250 mm
+    V    =  40.0260 mm
+    W    =  40.0270 mm
+    X    =  40.0280 mm
+    Y    =  40.0290 mm
+    Z    =  40.0300 mm
+    AA   =  40.0310 mm
+    AB   =  40.0320 mm
+    AC   =  40.0330 mm
+    AD   =  40.0340 mm
+    AE   =  40.0350 mm
+    AF   =  40.0360 mm
+    AG   =  40.0370 mm
+    AH   =  40.0380 mm
+    AI   =  40.0390 mm
+    AJ   =  40.0400 mm
+    AK   =  40.0410 mm
+    AL   =  40.0420 mm
+    AM   =  40.0430 mm
+    AN   =  40.0440 mm
+    AO   =  40.0450 mm
+
+  AGULHA  (121 classes | nominal=72.75  tol=±0.06  step=0.001)
+    A    =  72.6900 mm
+    B    =  72.6910 mm
+    C    =  72.6920 mm
+    D    =  72.6930 mm
+    E    =  72.6940 mm
+    F    =  72.6950 mm
+    G    =  72.6960 mm
+    H    =  72.6970 mm
+    I    =  72.6980 mm
+    J    =  72.6990 mm
+    K    =  72.7000 mm
+    L    =  72.7010 mm
+    M    =  72.7020 mm
+    N    =  72.7030 mm
+    O    =  72.7040 mm
+    P    =  72.7050 mm
+    Q    =  72.7060 mm
+    R    =  72.7070 mm
+    S    =  72.7080 mm
+    T    =  72.7090 mm
+    U    =  72.7100 mm
+    V    =  72.7110 mm
+    W    =  72.7120 mm
+    X    =  72.7130 mm
+    Y    =  72.7140 mm
+    Z    =  72.7150 mm
+    AA   =  72.7160 mm
+    AB   =  72.7170 mm
+    AC   =  72.7180 mm
+    AD   =  72.7190 mm
+    AE   =  72.7200 mm
+    AF   =  72.7210 mm
+    AG   =  72.7220 mm
+    AH   =  72.7230 mm
+    AI   =  72.7240 mm
+    AJ   =  72.7250 mm
+    AK   =  72.7260 mm
+    AL   =  72.7270 mm
+    AM   =  72.7280 mm
+    AN   =  72.7290 mm
+    AO   =  72.7300 mm
+    AP   =  72.7310 mm
+    AQ   =  72.7320 mm
+    AR   =  72.7330 mm
+    AS   =  72.7340 mm
+    AT   =  72.7350 mm
+    AU   =  72.7360 mm
+    AV   =  72.7370 mm
+    AW   =  72.7380 mm
+    AX   =  72.7390 mm
+    AY   =  72.7400 mm
+    AZ   =  72.7410 mm
+    BA   =  72.7420 mm
+    BB   =  72.7430 mm
+    BC   =  72.7440 mm
+    BD   =  72.7450 mm
+    BE   =  72.7460 mm
+    BF   =  72.7470 mm
+    BG   =  72.7480 mm
+    BH   =  72.7490 mm
+    BI   =  72.7500 mm
+    BJ   =  72.7510 mm
+    BK   =  72.7520 mm
+    BL   =  72.7530 mm
+    BM   =  72.7540 mm
+    BN   =  72.7550 mm
+    BO   =  72.7560 mm
+    BP   =  72.7570 mm
+    BQ   =  72.7580 mm
+    BR   =  72.7590 mm
+    BS   =  72.7600 mm
+    BT   =  72.7610 mm
+    BU   =  72.7620 mm
+    BV   =  72.7630 mm
+    BW   =  72.7640 mm
+    BX   =  72.7650 mm
+    BY   =  72.7660 mm
+    BZ   =  72.7670 mm
+    CA   =  72.7680 mm
+    CB   =  72.7690 mm
+    CC   =  72.7700 mm
+    CD   =  72.7710 mm
+    CE   =  72.7720 mm
+    CF   =  72.7730 mm
+    CG   =  72.7740 mm
+    CH   =  72.7750 mm
+    CI   =  72.7760 mm
+    CJ   =  72.7770 mm
+    CK   =  72.7780 mm
+    CL   =  72.7790 mm
+    CM   =  72.7800 mm
+    CN   =  72.7810 mm
+    CO   =  72.7820 mm
+    CP   =  72.7830 mm
+    CQ   =  72.7840 mm
+    CR   =  72.7850 mm
+    CS   =  72.7860 mm
+    CT   =  72.7870 mm
+    CU   =  72.7880 mm
+    CV   =  72.7890 mm
+    CW   =  72.7900 mm
+    CX   =  72.7910 mm
+    CY   =  72.7920 mm
+    CZ   =  72.7930 mm
+    DA   =  72.7940 mm
+    DB   =  72.7950 mm
+    DC   =  72.7960 mm
+    DD   =  72.7970 mm
+    DE   =  72.7980 mm
+    DF   =  72.7990 mm
+    DG   =  72.8000 mm
+    DH   =  72.8010 mm
+    DI   =  72.8020 mm
+    DJ   =  72.8030 mm
+    DK   =  72.8040 mm
+    DL   =  72.8050 mm
+    DM   =  72.8060 mm
+    DN   =  72.8070 mm
+    DO   =  72.8080 mm
+    DP   =  72.8090 mm
+    DQ   =  72.8100 mm
+
+=== Estoque de Mercado ===
+  BICO      : 30.0050=105  30.0060=88  30.0070=116  30.0090=74  30.0100=129  30.0110=93  30.0120=81  30.0140=107  30.0150=62  30.0160=134  30.0170=98  30.0180=77  30.0190=112  30.0210=86  30.0220=121  30.0230=70  30.0240=103  30.0250=95  30.0270=118  30.0280=84  30.0290=91  30.0300=109  30.0310=73  30.0320=127  30.0340=88  30.0350=96  30.0360=115  30.0370=69  30.0390=102  30.0400=83  30.0410=117  30.0420=78  30.0430=94  30.0450=111
+  OP        : 3.0050=120  3.0060=95  3.0080=84  3.0090=110  3.0100=73  3.0110=89  3.0130=102  3.0140=67  3.0150=115  3.0160=88  3.0170=94  3.0180=77  3.0200=131  3.0210=58  3.0220=143  3.0230=99  3.0240=86  3.0250=107  3.0260=72  3.0270=118  3.0290=91  3.0300=104  3.0310=66  3.0320=138  3.0330=79  3.0340=93  3.0350=112  3.0370=85  3.0380=97  3.0390=123  3.0400=61  3.0410=108  3.0420=76  3.0440=114  3.0450=90
+  SPACER    : 40.0050=98  40.0070=113  40.0080=87  40.0090=124  40.0100=71  40.0120=106  40.0130=89  40.0140=118  40.0150=75  40.0160=132  40.0180=92  40.0190=104  40.0200=68  40.0210=115  40.0220=83  40.0240=127  40.0250=96  40.0260=109  40.0270=74  40.0280=121  40.0300=88  40.0310=103  40.0320=77  40.0330=136  40.0340=91  40.0360=114  40.0370=86  40.0380=99  40.0390=72  40.0410=125  40.0420=80  40.0430=117  40.0440=93  40.0450=108
+
+============================================================
+RESULTADO DA OTIMIZACAO
+============================================================
+Total de montagens    : 3306
+
+Producao necessaria de AGULHA por classe:
+  Classe F (72.6950 mm): 98 pecas
+  Classe H (72.6970 mm): 7 pecas
+  Classe I (72.6980 mm): 15 pecas
+  Classe J (72.6990 mm): 73 pecas
+  Classe K (72.7000 mm): 18 pecas
+  Classe L (72.7010 mm): 4 pecas
+  Classe N (72.7030 mm): 83 pecas
+  Classe O (72.7040 mm): 1 pecas
+  Classe P (72.7050 mm): 10 pecas
+  Classe R (72.7070 mm): 74 pecas
+  Classe S (72.7080 mm): 26 pecas
+  Classe T (72.7090 mm): 13 pecas
+  Classe U (72.7100 mm): 60 pecas
+  Classe V (72.7110 mm): 11 pecas
+  Classe X (72.7130 mm): 19 pecas
+  Classe Y (72.7140 mm): 59 pecas
+  Classe AA (72.7160 mm): 28 pecas
+  Classe AB (72.7170 mm): 6 pecas
+  Classe AC (72.7180 mm): 68 pecas
+  Classe AD (72.7190 mm): 13 pecas
+  Classe AF (72.7210 mm): 2 pecas
+  Classe AG (72.7220 mm): 52 pecas
+  Classe AH (72.7230 mm): 53 pecas
+  Classe AI (72.7240 mm): 13 pecas
+  Classe AJ (72.7250 mm): 49 pecas
+  Classe AL (72.7270 mm): 26 pecas
+  Classe AM (72.7280 mm): 62 pecas
+  Classe AN (72.7290 mm): 46 pecas
+  Classe AO (72.7300 mm): 24 pecas
+  Classe AQ (72.7320 mm): 24 pecas
+  Classe AR (72.7330 mm): 50 pecas
+  Classe AS (72.7340 mm): 18 pecas
+  Classe AT (72.7350 mm): 9 pecas
+  Classe AV (72.7370 mm): 50 pecas
+  Classe AW (72.7380 mm): 45 pecas
+  Classe AX (72.7390 mm): 36 pecas
+  Classe AY (72.7400 mm): 31 pecas
+  Classe BA (72.7420 mm): 1 pecas
+  Classe BB (72.7430 mm): 26 pecas
+  Classe BC (72.7440 mm): 59 pecas
+  Classe BD (72.7450 mm): 30 pecas
+  Classe BE (72.7460 mm): 54 pecas
+  Classe BF (72.7470 mm): 29 pecas
+  Classe BH (72.7490 mm): 8 pecas
+  Classe BI (72.7500 mm): 62 pecas
+  Classe BJ (72.7510 mm): 8 pecas
+  Classe BK (72.7520 mm): 49 pecas
+  Classe BL (72.7530 mm): 29 pecas
+  Classe BM (72.7540 mm): 25 pecas
+  Classe BO (72.7560 mm): 23 pecas
+  Classe BP (72.7570 mm): 43 pecas
+  Classe BQ (72.7580 mm): 29 pecas
+  Classe BT (72.7610 mm): 45 pecas
+  Classe BU (72.7620 mm): 73 pecas
+  Classe BX (72.7650 mm): 48 pecas
+  Classe BZ (72.7670 mm): 36 pecas
+  Classe CA (72.7680 mm): 7 pecas
+  Classe CB (72.7690 mm): 45 pecas
+  Classe CC (72.7700 mm): 39 pecas
+  Classe CD (72.7710 mm): 20 pecas
+  Classe CE (72.7720 mm): 44 pecas
+  Classe CF (72.7730 mm): 22 pecas
+  Classe CG (72.7740 mm): 23 pecas
+  Classe CH (72.7750 mm): 32 pecas
+  Classe CI (72.7760 mm): 41 pecas
+  Classe CJ (72.7770 mm): 42 pecas
+  Classe CK (72.7780 mm): 53 pecas
+  Classe CL (72.7790 mm): 26 pecas
+  Classe CM (72.7800 mm): 6 pecas
+  Classe CO (72.7820 mm): 59 pecas
+  Classe CQ (72.7840 mm): 28 pecas
+  Classe CR (72.7850 mm): 1 pecas
+  Classe CS (72.7860 mm): 85 pecas
+  Classe CT (72.7870 mm): 11 pecas
+  Classe CU (72.7880 mm): 15 pecas
+  Classe CW (72.7900 mm): 60 pecas
+  Classe CX (72.7910 mm): 25 pecas
+  Classe CY (72.7920 mm): 15 pecas
+  Classe CZ (72.7930 mm): 59 pecas
+  Classe DA (72.7940 mm): 10 pecas
+  Classe DC (72.7960 mm): 13 pecas
+  Classe DD (72.7970 mm): 49 pecas
+  Classe DF (72.7990 mm): 40 pecas
+  Classe DG (72.8000 mm): 34 pecas
+  Classe DH (72.8010 mm): 49 pecas
+  Classe DI (72.8020 mm): 2 pecas
+  Classe DJ (72.8030 mm): 10 pecas
+  Classe DK (72.8040 mm): 70 pecas
+  Classe DL (72.8050 mm): 35 pecas
+  Classe DM (72.8060 mm): 3 pecas
+  Classe DN (72.8070 mm): 75 pecas
+  Classe DO (72.8080 mm): 1 pecas
+  Classe DQ (72.8100 mm): 204 pecas
+
+Aproveitamento do estoque dos Modelos fixos:
+  OP        : 98.2%
+  BICO      : 100.0%
+  SPACER    : 97.5%
+
+Estoque final (saldo remanescente):
+
+  OP:
+    3.0250 mm : 59 pecas
+    Total restante: 59 pecas
+
+  BICO:
+    Total restante: 0 pecas
+
+  SPACER:
+    40.0250 mm : 42 pecas
+    40.0260 mm : 43 pecas
+    Total restante: 85 pecas
+============================================================
